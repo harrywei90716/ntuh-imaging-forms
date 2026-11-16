@@ -34,40 +34,49 @@
   }
 
   * { box-sizing: border-box; }
+  html {
+    font-size: 16px;
+  }
   body {
     margin: 0;
     font-family: "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", system-ui, -apple-system, sans-serif;
     background: var(--bg);
     color: var(--text);
     line-height: 1.55;
+    overflow-x: clip;
   }
 
   /* Header */
   .topbar {
     background: linear-gradient(135deg, #0f2942 0%, #0e4d64 60%, #0e7490 100%);
     color: #fff;
-    padding: 18px 24px 16px;
+    padding: 16px clamp(14px, 2.5%, 32px);
     box-shadow: 0 4px 18px rgba(15, 41, 66, 0.14);
   }
   .topbar-inner {
-    max-width: 1420px;
+    max-width: 1840px;
+    width: 100%;
     margin: 0 auto;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
+    gap: 10px 16px;
+  }
+  .brand {
+    min-width: 0;
+    flex: 1 1 320px;
   }
   .brand h1 {
     margin: 0;
-    font-size: 1.32rem;
+    font-size: clamp(1.1rem, 1.02rem + 0.35vw, 1.38rem);
     font-weight: 700;
     letter-spacing: 0.3px;
   }
   .brand p {
     margin: 3px 0 0;
     font-size: 0.84rem;
-    color: rgba(255, 255, 255, 0.84);
+    color: rgba(255, 255, 255, 0.86);
   }
   .topbar-stats {
     display: flex;
@@ -81,16 +90,18 @@
     padding: 5px 12px;
     border-radius: 999px;
     font-size: 0.8rem;
+    white-space: nowrap;
   }
 
   /* Two-column Workspace */
   .layout {
-    max-width: 1420px;
+    max-width: 1840px;
+    width: 100%;
     margin: 0 auto;
-    padding: 18px 20px 48px;
+    padding: 18px clamp(12px, 2.2%, 32px) 48px;
     display: grid;
-    grid-template-columns: 286px minmax(0, 1fr);
-    gap: 18px;
+    grid-template-columns: clamp(220px, 23%, 286px) minmax(0, 1fr);
+    gap: clamp(12px, 1.6%, 22px);
     align-items: start;
   }
 
@@ -102,19 +113,40 @@
     box-shadow: var(--shadow);
     position: sticky;
     top: 14px;
-    max-height: calc(100vh - 28px);
+    max-height: calc(100dvh - 28px);
     overflow-y: auto;
+    min-width: 0;
   }
   .sidebar-head {
-    padding: 12px 15px;
+    padding: 12px 14px;
     border-bottom: 1px solid var(--border);
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 8px;
     position: sticky;
     top: 0;
     background: var(--surface);
     z-index: 2;
+  }
+  .sidebar-head-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .sidebar-close-btn {
+    display: none;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--navy);
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 700;
+    align-items: center;
+    justify-content: center;
   }
   .sidebar-head h2 {
     margin: 0;
@@ -238,7 +270,8 @@
     align-items: center;
   }
   .search-box {
-    flex: 1 1 320px;
+    flex: 1 1 min(240px, 100%);
+    min-width: 0;
     position: relative;
   }
   .search-box input {
@@ -427,7 +460,7 @@
   /* Cards Grid */
   .cards-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 295px), 1fr));
     gap: 13px;
   }
   .card {
@@ -439,6 +472,8 @@
     display: flex;
     flex-direction: column;
     gap: 9px;
+    min-width: 0;
+    overflow-wrap: anywhere;
     transition: transform 0.12s, box-shadow 0.12s, border-color 0.12s;
   }
   .card:hover {
@@ -635,16 +670,17 @@
   }
   .drawer-backdrop.open { display: block; }
 
-  @media (max-width: 960px) {
+  @media (max-width: 820px) {
     .layout { grid-template-columns: 1fr; }
     .mobile-filter-btn { display: inline-flex; align-items: center; gap: 5px; }
+    .sidebar-close-btn { display: inline-flex; }
     .sidebar {
       position: fixed;
       left: 0;
       top: 0;
       bottom: 0;
       width: min(310px, 86vw);
-      max-height: 100vh;
+      max-height: 100dvh;
       border-radius: 0 14px 14px 0;
       z-index: 100;
       transform: translateX(-105%);
@@ -652,8 +688,10 @@
     }
     .sidebar.open { transform: translateX(0); }
   }
-  @media (max-width: 600px) {
+  @media (max-width: 540px) {
     .cards-grid { grid-template-columns: 1fr; }
+    .search-panel { padding: 12px; }
+    .card { padding: 12px 13px; }
   }
 </style>
 </head>
@@ -678,7 +716,10 @@
   <aside id="sidebar" class="sidebar" aria-label="篩選條件">
     <div class="sidebar-head">
       <h2>篩選條件</h2>
-      <button id="clearAllBtn" class="btn-clear-sm">全部清除</button>
+      <div class="sidebar-head-actions">
+        <button id="clearAllBtn" class="btn-clear-sm">全部清除</button>
+        <button id="sidebarCloseBtn" class="sidebar-close-btn" title="關閉篩選">✕</button>
+      </div>
     </div>
     <div id="facetsContainer"></div>
   </aside>
@@ -838,6 +879,7 @@ const sidebar = document.getElementById("sidebar");
 const drawerBackdrop = document.getElementById("drawerBackdrop");
 const mobileFilterBtn = document.getElementById("mobileFilterBtn");
 const mobileFilterCnt = document.getElementById("mobileFilterCnt");
+const sidebarCloseBtn = document.getElementById("sidebarCloseBtn");
 
 function escapeHtml(str) {
   return String(str)
@@ -1209,14 +1251,16 @@ viewTableBtn.addEventListener("click", () => {
   render();
 });
 
+const closeDrawer = () => {
+  sidebar.classList.remove("open");
+  drawerBackdrop.classList.remove("open");
+};
 mobileFilterBtn.addEventListener("click", () => {
   sidebar.classList.add("open");
   drawerBackdrop.classList.add("open");
 });
-drawerBackdrop.addEventListener("click", () => {
-  sidebar.classList.remove("open");
-  drawerBackdrop.classList.remove("open");
-});
+drawerBackdrop.addEventListener("click", closeDrawer);
+sidebarCloseBtn.addEventListener("click", closeDrawer);
 
 render();
 </script>
